@@ -70,6 +70,7 @@ var createTaskEl = function(taskDataObj) {
 
     // add task id as a custom attribute
     taskListitem.setAttribute("data-task-id", taskIdCounter);
+    taskListitem.setAttribute("draggable", "true");
     var taskInfoEl = document.createElement("div");
     taskInfoEl.className = "task-info";
     
@@ -189,14 +190,63 @@ var taskButtonHandler = function(event) {
     formE1.setAttribute("data-task-id", taskId);
   };
 
+  var dragTaskHandler = function(event) {
+    var taskId = event.target.getAttribute("data-task-id");
+    event.dataTransfer.setData("text/plain", taskId);
+    var getId = event.dataTransfer.getData("text/plain");
+    console.log("getId:", getId, typeof getId);
+    console.log("Task ID:", taskId);
+    console.log("event.target:", event.target); 
+    console.log("event.type:", event.type);
+    console.log("event", event);
+  };
+
+  var dropZoneDragHandler = function(event) {
+    var taskListEl = event.target.closest(".task-list");
+    if (taskListEl) {
+      event.preventDefault();
+      console.dir(taskListEl);
+    }
+  };
+
+  var dropTaskHandler = function(event) {
+    var id = event.dataTransfer.getData("text/plain");
+    var draggableElement = document.querySelector("[data-task-id='" + id + "']");
+    var dropZoneE1 = event.target.closest(".task-list");
+    var statusSelectE1 = draggableElement.querySelector("select[name='status-change']");
+    var statusType = dropZoneE1.id;
+
+    if (statusType === "tasks-to-do") {
+      statusSelectE1.selectedIndex = 0;
+    } 
+    else if (statusType === "tasks-in-progress") {
+      statusSelectE1.selectedIndex = 1;
+    } 
+    else if (statusType === "tasks-completed") {
+      statusSelectE1.selectedIndex = 2;
+    }
+
+    dropZoneE1.appendChild(draggableElement);
+    console.log(statusType);
+    console.dir(dropZoneE1);
+    console.dir(statusSelectE1);
+    console.log(statusSelectE1);
+    console.log(draggableElement);
+    console.dir(draggableElement);
+    console.log("Drop Event Target:", event.target, event.dataTransfer, id);
+  };
+
 // buttonE1.addEventListener("click", createTaskhandler);
 formE1.addEventListener("submit", taskFormHandler);
 pageContentEl.addEventListener("click", taskButtonHandler);
 pageContentEl.addEventListener("change", taskStatusChangeHandler);
+pageContentEl.addEventListener("dragstart", dragTaskHandler);
+pageContentEl.addEventListener("dragover", dropZoneDragHandler);
+pageContentEl.addEventListener("drop", dropTaskHandler);
 
 //data-* custom data attributes allow developers to store extra information about an HTML element without conflicting the built in attributes, 
 //* is replaced by what the developer would like to call the attribute, use getAttribute to get the attribute in javascript, attribute value must be a string
-
+// datatransfer is the place to put the event property
 
 
 //Hack
