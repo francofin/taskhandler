@@ -205,6 +205,7 @@ var taskButtonHandler = function(event) {
     var taskListEl = event.target.closest(".task-list");
     if (taskListEl) {
       event.preventDefault();
+      taskListEl.setAttribute("style", "background: rgba(68, 233, 255, 0.7); border-style: dashed;");
       console.dir(taskListEl);
     }
   };
@@ -225,7 +226,7 @@ var taskButtonHandler = function(event) {
     else if (statusType === "tasks-completed") {
       statusSelectE1.selectedIndex = 2;
     }
-
+    dropZoneE1.removeAttribute("style");
     dropZoneE1.appendChild(draggableElement);
     console.log(statusType);
     console.dir(dropZoneE1);
@@ -236,6 +237,12 @@ var taskButtonHandler = function(event) {
     console.log("Drop Event Target:", event.target, event.dataTransfer, id);
   };
 
+  var dragLeaveHandler = function(event) {
+    var taskListEl = event.target.closest(".task-list");
+    if (taskListEl) {
+      taskListEl.removeAttribute("style");
+    }
+  }
 // buttonE1.addEventListener("click", createTaskhandler);
 formE1.addEventListener("submit", taskFormHandler);
 pageContentEl.addEventListener("click", taskButtonHandler);
@@ -243,6 +250,7 @@ pageContentEl.addEventListener("change", taskStatusChangeHandler);
 pageContentEl.addEventListener("dragstart", dragTaskHandler);
 pageContentEl.addEventListener("dragover", dropZoneDragHandler);
 pageContentEl.addEventListener("drop", dropTaskHandler);
+pageContentEl.addEventListener("dragleave", dragLeaveHandler);
 
 //data-* custom data attributes allow developers to store extra information about an HTML element without conflicting the built in attributes, 
 //* is replaced by what the developer would like to call the attribute, use getAttribute to get the attribute in javascript, attribute value must be a string
