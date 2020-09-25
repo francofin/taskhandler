@@ -66,6 +66,8 @@ var completeEditTask = function(taskName, taskType, taskId) {
       }
     };
 
+    saveTasks();
+
     alert("Task Updated!");
 
     formE1.removeAttribute("data-task-id");
@@ -95,6 +97,8 @@ var createTaskEl = function(taskDataObj) {
     taskDataObj.id = taskIdCounter;
 
     tasks.push(taskDataObj);
+
+    saveTasks();
 
     // increase task counter for next unique id
     taskIdCounter++;
@@ -170,7 +174,7 @@ var taskButtonHandler = function(event) {
     var taskSelected = document.querySelector(".task-item[data-task-id='" + taskId + "']");
 
     if (statusValue === "to do") {
-        tasksToDoEl.appendChild(taskSelected);
+        listE1.appendChild(taskSelected);
       } 
     else if (statusValue === "in progress") {
     tasksInProgressEl.appendChild(taskSelected);
@@ -185,6 +189,8 @@ var taskButtonHandler = function(event) {
         tasks[i].status = statusValue;
       }
     }
+
+    saveTasks();
   };
 
   var deleteTask = function(taskId) {
@@ -205,6 +211,8 @@ var taskButtonHandler = function(event) {
 
     // reassign tasks array to be the same as updatedTaskArr
     tasks = updatedTaskArr;
+
+    saveTasks();
   };
 
   var editTask = function(taskId) {
@@ -248,24 +256,24 @@ var taskButtonHandler = function(event) {
     var id = event.dataTransfer.getData("text/plain");
     var draggableElement = document.querySelector("[data-task-id='" + id + "']");
     var dropZoneE1 = event.target.closest(".task-list");
-    var statusSelectE1 = draggableElement.querySelector("select[name='status-change']");
+    var statusSelectEl = draggableElement.querySelector("select[name='status-change']");
     var statusType = dropZoneE1.id;
 
     if (statusType === "tasks-to-do") {
-      statusSelectE1.selectedIndex = 0;
+      statusSelectEl.selectedIndex = 0;
     } 
     else if (statusType === "tasks-in-progress") {
-      statusSelectE1.selectedIndex = 1;
+      statusSelectEl.selectedIndex = 1;
     } 
     else if (statusType === "tasks-completed") {
-      statusSelectE1.selectedIndex = 2;
+      statusSelectEl.selectedIndex = 2;
     }
     dropZoneE1.removeAttribute("style");
     dropZoneE1.appendChild(draggableElement);
     console.log(statusType);
     console.dir(dropZoneE1);
-    console.dir(statusSelectE1);
-    console.log(statusSelectE1);
+    console.dir(statusSelectEl);
+    console.log(statusSelectEl);
     console.log(draggableElement);
     console.dir(draggableElement);
     console.log("Drop Event Target:", event.target, event.dataTransfer, id);
@@ -277,7 +285,7 @@ var taskButtonHandler = function(event) {
       }
     }
 
-console.log(tasks);
+saveTasks();
   };
 
   var dragLeaveHandler = function(event) {
@@ -285,6 +293,53 @@ console.log(tasks);
     if (taskListEl) {
       taskListEl.removeAttribute("style");
     }
+  };
+
+  var saveTasks = function() {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+
+  };
+
+  var loadTasks = function() {
+    tasks = localStorage.getItem("tasks");
+    console.log(tasks);
+    if(!tasks) {
+      tasks = [];
+      return false;
+    };
+    tasks = JSON.parse(tasks);
+    console.log(tasks);
+
+    for(var i = 0; i < tasks.length; i++) {
+      console.log(tasks[i]);
+      tasks[i].id = taskIdCounter;
+      console.log(tasks[i]);
+      var listItemE1 = document.createElement("li");
+      listItemE1.setAttribute("class", "task-item");
+      listItemE1.setAttribute("data-task-id", tasks[i].id);
+      listItemE1.setAttribute("draggable", "true");
+      console.log(listItemE1);
+      var taskInfoEl = document.createElement("div");
+      taskInfoEl.setAttribute("class", "task-info");
+      taskInfoEl.innerHTML = "<h3 class='task-name'>" + tasks[i].name + "</h3><span class='task-type'>" + tasks[i].type + "</span>";
+      listItemE1.append(taskInfoEl);
+      var taskActionE1 = createTaskActions(tasks[i].id);
+      listItemE1.append(taskActionE1);
+      if (tasks[i].status==="to do") {
+        listItemE1.querySelector("select[name='status-change']").selectedIndex = 0;
+        listE1.append(listItemE1);
+      }
+      else if (tasks[i].status==="in progress") {
+        listItemE1.querySelector("select[name='status-change']").selectedIndex =1;
+        tasksInProgressEl.append(listItemE1);
+      }
+      else if (tasks[i].status==="in progress") {
+        listItemE1.querySelector("select[name='status-change']").selectedIndex =2;
+        tasksCompletedEl.append(listItemE1);
+      }
+      taskIdCounter+=1;
+      console.log(listItemE1);
+    };
   }
 // buttonE1.addEventListener("click", createTaskhandler);
 formE1.addEventListener("submit", taskFormHandler);
@@ -294,6 +349,7 @@ pageContentEl.addEventListener("dragstart", dragTaskHandler);
 pageContentEl.addEventListener("dragover", dropZoneDragHandler);
 pageContentEl.addEventListener("drop", dropTaskHandler);
 pageContentEl.addEventListener("dragleave", dragLeaveHandler);
+loadTasks()
 
 //data-* custom data attributes allow developers to store extra information about an HTML element without conflicting the built in attributes, 
 //* is replaced by what the developer would like to call the attribute, use getAttribute to get the attribute in javascript, attribute value must be a string
